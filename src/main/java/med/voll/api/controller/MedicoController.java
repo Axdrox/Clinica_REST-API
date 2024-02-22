@@ -8,6 +8,7 @@ import med.voll.api.medico.MedicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,14 +26,13 @@ public class MedicoController {
     }
 
     /**
-     *
      * @return: findAll(): Regresa un listado, porque se extiende de la clase de JpaRepository
      * Se tiene que cumplir el tipo de retorno de DatosListadoMedico, pero como regresa
      * una entidad "Medico", se utiliza el método stream() y que cree un Médico utilizando
      * los datos de DatosListadoMedico.
      */
     @GetMapping
-    public Page<DatosListadoMedico> listadoMedicos(Pageable paginacion){
+    public Page<DatosListadoMedico> listadoMedicos(@PageableDefault(size = 2, sort = "nombre") Pageable paginacion) {
         return medicoRepository.findAll(paginacion).map(DatosListadoMedico::new);
     }
 }
