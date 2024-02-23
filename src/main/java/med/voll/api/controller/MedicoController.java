@@ -28,10 +28,16 @@ public class MedicoController {
      * Se tiene que cumplir el tipo de retorno de DatosListadoMedico, pero como regresa
      * una entidad "Medico", se utiliza el método stream() y que cree un Médico utilizando
      * los datos de DatosListadoMedico.
+     *
+     * findByActivoTrue: La búsqueda en el repositorio la realiza por el parámetro activo.
+     * es una nomenclatura de SpringData (SpringJPA), para crear queries dinámicas y hacer el
+     * WHERE en el SELECT.
+     *
      */
     @GetMapping
     public Page<DatosListadoMedico> listadoMedicos(@PageableDefault(size = 2, sort = "nombre") Pageable paginacion) {
-        return medicoRepository.findAll(paginacion).map(DatosListadoMedico::new);
+        //return medicoRepository.findAll(paginacion).map(DatosListadoMedico::new);
+        return medicoRepository.findByActivoTrue(paginacion).map(DatosListadoMedico::new);
     }
 
     /**
@@ -39,7 +45,7 @@ public class MedicoController {
      * >> Nombre
      * >> Documento
      * >> Direccion
-     *
+     * <p>
      * getReferenceById(): porque el cliente está enviando el id, entonces realiza
      * la búsqueda en la base de datos. Este método ya lo ofrece JpaRepository
      *
@@ -54,8 +60,38 @@ public class MedicoController {
      */
     @PutMapping
     @Transactional //JPA va a mapear que cuando se termine este método, la transacción se va a liberar
-    public void actualizarMedico(@RequestBody @Valid DatosActualizarMedico datosActualizarMedico){
+    public void actualizarMedico(@RequestBody @Valid DatosActualizarMedico datosActualizarMedico) {
         Medico medico = medicoRepository.getReferenceById(datosActualizarMedico.id());
         medico.actualizarDatos(datosActualizarMedico);
     }
+
+    /**
+     * DELETE LÓGICO
+     * @param id
+     */
+    @DeleteMapping("/{id}")
+    @Transactional
+    public void eliminarMedico(@PathVariable Long id) {
+        // No es necesario un DTO, se le pasa el parámetro indicado en la url (id).
+        Medico medico = medicoRepository.getReferenceById(id);
+        medico.desactivarMedico();
+    }
+
+/*                  DADO A QUE SE REALIZARÁ UNA ELIMINACIÓN LÓGICA
+                    SE UTILIZARÁ EL MÉTODO UPDATE EN VEZ DE DELETE
+ */
+    /**
+     * @param id: Se le está indicando que el id que obtenga en la url
+     *            sea el parámetro que está esperando para poder trabajar
+     *            con dicha variable, esto gracias a la anotación @PathVariable.
+     * "/{id}": Para que sea dinámico.
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public void eliminarMedico(@PathVariable Long id) {
+        // No es necesario un DTO, se le pasa el parámetro indicado en la url (id).
+        Medico medico = medicoRepository.getReferenceById(id);
+        medicoRepository.delete(medico);
+    }
+*/
 }
